@@ -1,0 +1,37 @@
+[project]
+name = "yz-musetalk"        # dist name; import package is "yz_musetalk_client"
+version = "0.0.1"
+description = "MuseTalk client satellite — JarvYZ-side integration for the MuseTalk photoreal-face Docker container. WS bridge + reference-clip CRUD."
+requires-python = ">=3.10,<3.13"
+license = { text = "MIT" }
+# This satellite is a LIBRARY, not a process. There's no `python -m
+# yz_musetalk_client.server` entry point — the actual rendering service
+# runs upstream as a Docker container (see README.md for the contract).
+# These deps cover the integration layer: HTTP (REST refs CRUD), WS
+# (frame stream), audio encode (TTS WAV → wrapper), image probing for
+# ref thumbnails.
+dependencies = [
+    "fastapi>=0.110.0",
+    "httpx>=0.25.0",
+    "numpy>=1.24.0",
+    "soundfile>=0.12.0",
+    "websockets>=12.0",
+    "pillow>=10.0.0",
+    "pydantic>=2.5.0",
+    # routes.py uses FastAPI Form/UploadFile (refs upload) — needs
+    # python-multipart. Previously masked because jarvyz-core declares it;
+    # declared here so the satellite's deps are honestly self-contained.
+    "python-multipart>=0.0.9",
+]
+
+# Intentionally NO [project.scripts] — see README.md "The shape question".
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "ruff>=0.4"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["yz_musetalk_client*"]

@@ -1,0 +1,64 @@
+name: musetalk
+
+# MuseTalk wrapper container — Tier-1.5 satellite extraction (2026-05-31).
+#
+# Build context is THIS directory (satellites/yz-musetalk/). The Dockerfile +
+# wrapper/ are in-repo now (versioned alongside Jarvis). The upstream
+# MuseTalk model code + weights stay external because:
+#   - MuseTalk repo is a vendored upstream copy (~GB)
+#   - weights/ is ~GB and can't live in git
+# Both are mounted from `${MUSETALK_HOME}` (default
+# `/home/blade/projects/musetalk`). Override to relocate.
+#
+# To start: `cd satellites/yz-musetalk && docker compose up -d`
+# Same wrapper, same port (8901), same wire protocol — only the source
+# location of the wrapper + Dockerfile changed.
+
+services:
+  musetalk:
+    build: .
+    container_name: musetalk
+    restart: unless-stopped
+    # Port 8901 on the host. Reachable from Jarvis (Windows OR WSL) via
+    # http://127.0.0.1:8901 (NOT "localhost" — see jarvis project
+    # memory: windows_localhost_quirk).
+    ports:
+      - "8901:8000"
+    gpus: all
+    environment:
+      # HuggingFace caches into the mounted volume so weights persist
+      # across image rebuilds.
+      HF_HOME: /weights
+      PYTHONUNBUFFERED: "1"
+      # Inherit from host so we can tune without rebuilds:
+      #   MUSETALK_BATCH_SIZE=40 docker compose up -d --force-recreate
+      MUSETALK_BATCH_SIZE: "${MUSETALK_BATCH_SIZE:-20}"
+      MUSETALK_AVATAR: "${MUSETALK_AVATAR:-avator_megan}"
+    volumes:
+      # MuseTalk upstream repo (vendored copy of the open-source repo;
+      # NOT shipped in this repo). Mount from MUSETALK_HOME so a fresh
+      # clone can be relocated by env override.
+      - ${MUSETALK_HOME:-/home/blade/projects/musetalk}/MuseTalk:/app/MuseTalk
+      # Model weights — multi-GB. Same MUSETALK_HOME root.
+      - ${MUSETALK_HOME:-/home/blade/projects/musetalk}/weights:/weights
+      # Reference clips (the photos/videos the model animates). Default
+      # path keeps backward compat with the pre-migration setup; override
+      # via MUSETALK_REFS_DIR if Jarvis runs from a different home.
+      - ${MUSETALK_REFS_DIR:-/mnt/c/Users/Blade/.jarvyz/musetalk_refs}:/refs
+      # Our wrapper code (THE thing this migration moved into the repo).
+      # ./wrapper resolves to satellites/yz-musetalk/wrapper, edited in-place
+      # without rebuilding the image.
+      - ./wrapper:/app/wrapper
+    working_dir: /app/MuseTalk
+    # Run the FastAPI wrapper. It loads MuseTalk models + prepares the
+    # default avatar at startup, so the first POST to /ws/say returns
+    # in ~inference latency only.
+    command:
+      - uvicorn
+      - wrapper.main:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --app-dir
+      - /app
