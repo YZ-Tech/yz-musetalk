@@ -33,5 +33,9 @@
       "label": "Active reference",
       "description": "Filename of the reference image/video used by the wrapper. Persisted across JarvYZ restarts (re-applied to wrapper at boot)."
     }
+  },
+  "requires": {
+    "network": "setup",
+    "sensors": []
   }
 }
