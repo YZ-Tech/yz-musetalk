@@ -5,7 +5,7 @@ export interface Capabilities {
   apiBase: string
   deployTarget: DeployTarget
   /** Whether the host can synthesize text → audio. JarvYZ-embedded:
-   *  true (JarvYZ has piper/xtts). Standalone: false (wrapper has no
+   *  true (JarvYZ has piper/chatterbox). Standalone: false (wrapper has no
    *  TTS engine — see SATELLITE_DYNAMIC_MODULES.md / planning notes). The
    *  TextInputCard hides itself when this is false. */
   canSynthesize: boolean
