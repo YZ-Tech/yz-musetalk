@@ -16,6 +16,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useRef, useState, type DragEvent } from 'react'
+import { ConfirmDialog } from './ConfirmDialog'
 import { IconBtn } from '../lib/IconBtn'
 import { useApi } from '../lib/api'
 import { useMusetalkStore } from '../lib/store-context'
@@ -73,8 +74,9 @@ export function MuseTalkRefsDialog({
     setBusy(null)
   }
 
+  // Confirmed via the themed ConfirmDialog below, not window.confirm.
+  const [confirmDel, setConfirmDel] = useState<string | null>(null)
   const remove = async (name: string) => {
-    if (!confirm(`Delete "${name}"?`)) return
     setBusy(name)
     await deleteRef(name)
     setBusy(null)
@@ -182,7 +184,7 @@ export function MuseTalkRefsDialog({
                 refUrl={api.refUrl(r.name)}
                 busy={busy === r.name}
                 onActivate={() => activate(r.name)}
-                onDelete={() => remove(r.name)}
+                onDelete={() => setConfirmDel(r.name)}
               />
             ))}
           </Box>
@@ -214,6 +216,14 @@ export function MuseTalkRefsDialog({
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
           active: <strong>{activeRef || '—'}</strong>
         </Typography>
+
+        <ConfirmDialog
+          open={confirmDel !== null}
+          title="Delete reference"
+          message={`Delete "${confirmDel}"? MuseTalk can't lip-sync against it anymore.`}
+          onConfirm={() => confirmDel && void remove(confirmDel)}
+          onClose={() => setConfirmDel(null)}
+        />
       </DialogContent>
     </Dialog>
   )
