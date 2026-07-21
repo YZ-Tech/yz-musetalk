@@ -1,6 +1,7 @@
 import { defineConfig, type UserConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
+import { makeLibConfig } from './scripts/vite-lib.mjs'
 
 // Mode 'lib': IIFE module loaded by JarvYZ via @yz-dev/react-dynamic-module.
 //   - Externalises react/react-dom (host injects via window globals).
@@ -12,36 +13,9 @@ import { fileURLToPath, URL } from 'node:url'
 // at / serves the UI. A friend running `cd satellites/yz-musetalk &&
 // docker compose up` gets a working UI at http://127.0.0.1:8901/.
 
-const libConfig: UserConfig = {
-  plugins: [react()],
-  define: { 'process.env.NODE_ENV': JSON.stringify('production') },
-  build: {
-    outDir: 'dist-lib',
-    emptyOutDir: true,
-    lib: {
-      entry: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
-      name: 'YzMusetalk',
-      formats: ['iife'],
-      fileName: () => 'yz-musetalk.iife.js',
-    },
-    // Zustand v5 → use-sync-external-store/shim's literal require("react").
-    // Same shim as music + people satellites; see SATELLITE_DYNAMIC_MODULES.md.
-    rollupOptions: {
-      external: ['react', 'react-dom'],
-      output: {
-        globals: { react: 'React', 'react-dom': 'ReactDOM' },
-        exports: 'named',
-        extend: true,
-        banner:
-          'var require = function(id) {' +
-          ' if (id === "react") return window.React;' +
-          ' if (id === "react-dom") return window.ReactDOM;' +
-          ' throw new Error("require not handled: " + id);' +
-          ' };',
-      },
-    },
-  },
-}
+// The IIFE lib recipe is the CANONICAL shared one (slug + global name
+// derived from ../manifest.json) — see satellites/_ui-tooling/README.md.
+const libConfig: UserConfig = makeLibConfig(import.meta.url, react)
 
 // Wrapper container exposes refs CRUD + /ws/say at this URL.
 const SAT = process.env.VITE_SATELLITE_URL || 'http://127.0.0.1:8901'
