@@ -33,7 +33,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
       - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
       - name: Read version from pyproject.toml
         id: ver
         run: echo "VERSION=$(grep -m1 -E '^version = ' pyproject.toml | sed -E 's/.*"(.*)".*/\1/')" >> "$GITHUB_OUTPUT"

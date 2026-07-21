@@ -1,6 +1,6 @@
 [project]
 name = "yz-musetalk"        # dist name; import package is "yz_musetalk_client"
-version = "0.0.5"
+version = "0.0.6"
 description = "MuseTalk client satellite — JarvYZ-side integration for the MuseTalk photoreal-face Docker container. WS bridge + reference-clip CRUD."
 requires-python = ">=3.10,<3.13"
 license = { text = "MIT" }

@@ -1,7 +1,7 @@
 {
   "id": "musetalk",
   "name": "LipSync Image|Video",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "enabled": true,
   "nav": null,
   "dashboards": [
@@ -29,9 +29,9 @@
     },
     "active_ref": {
       "type": "string",
-      "default": "megan.jpg",
+      "default": "",
       "label": "Active reference",
-      "description": "Filename of the reference image/video used by the wrapper. Persisted across JarvYZ restarts (re-applied to wrapper at boot)."
+      "description": "Filename of the reference image/video used by the wrapper. Empty = none configured; upload one via Settings. Persisted across JarvYZ restarts (re-applied to wrapper at boot)."
     }
   },
   "requires": {

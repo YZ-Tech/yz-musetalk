@@ -63,23 +63,13 @@ def set_force_dispatch(on: bool) -> None:
 
 
 def ensure_refs_dir() -> None:
-    """Create ~/.jarvyz/musetalk_refs/ if absent, and seed it with the
-    bundled megan.jpg so a fresh install has a working reference. Called
-    once from runtime startup; safe to call repeatedly."""
-    from pathlib import Path
+    """Create ~/.jarvyz/musetalk_refs/ if absent. No reference ships
+    bundled (likeness rights) — a fresh install starts empty and the
+    user uploads their own via Settings. Called once from runtime
+    startup; safe to call repeatedly."""
     from jarvyz.pipeline.settings import MUSETALK_REFS_DIR
 
     MUSETALK_REFS_DIR.mkdir(parents=True, exist_ok=True)
-    default = MUSETALK_REFS_DIR / "megan.jpg"
-    if default.exists():
-        return
-    # Bundled source — copy from the frontend's public dir (only place
-    # this file currently lives in the repo). Best-effort: if it's not
-    # there, just leave the dir empty and let the user upload.
-    bundled = Path(__file__).resolve().parents[1] / "frontend" / "public" / "megan.jpg"
-    if bundled.exists():
-        import shutil
-        shutil.copy2(bundled, default)
 
 
 async def set_active_ref(name: str, timeout_s: float = 15.0) -> bool:

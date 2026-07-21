@@ -42,8 +42,8 @@ export function PhotorealFace({ topRightActions }: PhotorealFaceProps) {
 
   // Active ref is the satellite-store's source of truth (populated by
   // refreshRefs from the api.list() call; updated by setActiveRef).
-  const activeRef = useMusetalkStore((s) => s.musetalk.activeRef) ?? 'megan.jpg'
-  const referenceImageUrl = api.refUrl(activeRef)
+  const activeRef = useMusetalkStore((s) => s.musetalk.activeRef) ?? ''
+  const referenceImageUrl = activeRef ? api.refUrl(activeRef) : undefined
   const isVideoRef = /\.(mp4|webm|mov|mkv)$/i.test(activeRef)
 
   const fpsCounterRef = useRef<{ count: number; t0: number }>({ count: 0, t0: 0 })

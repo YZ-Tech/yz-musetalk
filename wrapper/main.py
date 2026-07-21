@@ -59,10 +59,10 @@ VERSION = os.environ.get("MUSETALK_VERSION", "v15")
 UNET_MODEL_PATH = MUSETALK_ROOT / "models" / "musetalkV15" / "unet.pth"
 UNET_CONFIG = MUSETALK_ROOT / "models" / "musetalkV15" / "musetalk.json"
 WHISPER_DIR = MUSETALK_ROOT / "models" / "whisper"
-DEFAULT_AVATAR = os.environ.get("MUSETALK_AVATAR", "avator_megan")
-DEFAULT_REFERENCE_VIDEO = os.environ.get(
-    "MUSETALK_REF_VIDEO", str(MUSETALK_ROOT / "data" / "video" / "megan.mp4")
-)
+# No default avatar ships (likeness rights) — configure MUSETALK_AVATAR +
+# MUSETALK_REF_VIDEO via env, or push a reference through /set_active.
+DEFAULT_AVATAR = os.environ.get("MUSETALK_AVATAR", "")
+DEFAULT_REFERENCE_VIDEO = os.environ.get("MUSETALK_REF_VIDEO", "")
 BATCH_SIZE = int(os.environ.get("MUSETALK_BATCH_SIZE", "20"))
 EXTRA_MARGIN = int(os.environ.get("MUSETALK_EXTRA_MARGIN", "10"))
 AUDIO_PADDING_LEFT = 2
@@ -356,7 +356,10 @@ pipeline: Optional[Pipeline] = None
 def _startup() -> None:
     global pipeline
     pipeline = Pipeline()
-    pipeline.prepare_avatar(DEFAULT_AVATAR, Path(DEFAULT_REFERENCE_VIDEO))
+    if DEFAULT_AVATAR and DEFAULT_REFERENCE_VIDEO:
+        pipeline.prepare_avatar(DEFAULT_AVATAR, Path(DEFAULT_REFERENCE_VIDEO))
+    else:
+        print("[musetalk] no default avatar configured — waiting for /set_active", flush=True)
 
 
 @app.get("/health")
