@@ -49,7 +49,7 @@ const SAT = process.env.VITE_SATELLITE_URL || 'http://127.0.0.1:8901'
 const pagesConfig: UserConfig = {
   plugins: [react()],
   server: {
-    port: 5185,
+    port: 5190,
     host: '127.0.0.1',
     proxy: {
       '/health': SAT,

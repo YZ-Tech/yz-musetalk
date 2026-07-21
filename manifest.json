@@ -1,7 +1,7 @@
 {
   "id": "musetalk",
   "name": "LipSync Image|Video",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "enabled": true,
   "nav": null,
   "dashboards": [

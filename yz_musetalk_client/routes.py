@@ -41,22 +41,26 @@ router = APIRouter()
 
 _WRAPPER = musetalk_client.MUSETALK_HTTP_URL
 
+# ONE pooled client for the process lifetime — a fresh AsyncClient per
+# request paid TCP+TLS setup every call (FABLE satellites finding). The
+# 15s default covers the JSON endpoints; the upload passes its own timeout
+# per request.
+_http = httpx.AsyncClient(timeout=15.0)
+
 
 async def _wrapper_get(path: str) -> dict:
     """GET against the wrapper. Lifts 4xx/5xx from wrapper to JarvYZ."""
-    async with httpx.AsyncClient(timeout=15.0) as client:
-        r = await client.get(f"{_WRAPPER}{path}")
-        if r.status_code >= 400:
-            raise HTTPException(r.status_code, r.text)
-        return r.json()
+    r = await _http.get(f"{_WRAPPER}{path}")
+    if r.status_code >= 400:
+        raise HTTPException(r.status_code, r.text)
+    return r.json()
 
 
 async def _wrapper_delete(path: str) -> dict:
-    async with httpx.AsyncClient(timeout=15.0) as client:
-        r = await client.delete(f"{_WRAPPER}{path}")
-        if r.status_code >= 400:
-            raise HTTPException(r.status_code, r.text)
-        return r.json()
+    r = await _http.delete(f"{_WRAPPER}{path}")
+    if r.status_code >= 400:
+        raise HTTPException(r.status_code, r.text)
+    return r.json()
 
 
 # ───── /api/musetalk/refs proxied to wrapper /refs ─────────────────
@@ -80,20 +84,20 @@ async def upload_ref(file: UploadFile = File(...)) -> dict:
     """Forward the multipart upload to the wrapper. Wrapper does the
     image resize / video pass-through + writes to /refs."""
     content = await file.read()
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        r = await client.post(
-            f"{_WRAPPER}/refs",
-            files={
-                "file": (
-                    file.filename or "upload",
-                    content,
-                    file.content_type or "application/octet-stream",
-                )
-            },
-        )
-        if r.status_code >= 400:
-            raise HTTPException(r.status_code, r.text)
-        return r.json()
+    r = await _http.post(
+        f"{_WRAPPER}/refs",
+        files={
+            "file": (
+                file.filename or "upload",
+                content,
+                file.content_type or "application/octet-stream",
+            )
+        },
+        timeout=60.0,
+    )
+    if r.status_code >= 400:
+        raise HTTPException(r.status_code, r.text)
+    return r.json()
 
 
 @router.delete("/api/musetalk/refs/{name}")
